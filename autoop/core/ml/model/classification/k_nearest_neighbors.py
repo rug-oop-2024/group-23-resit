@@ -1,7 +1,6 @@
 from autoop.core.ml.model import Model
 import numpy as np
 from pydantic import Field, PrivateAttr, field_validator
-from copy import deepcopy
 from collections import Counter
 
 
@@ -34,7 +33,7 @@ class KNearestNeighbors(Model):
         """
         self._parameters = {
             "observations": x,
-            "ground_truth": y
+            "ground_truth": y.flatten()
         }
 
     def predict(self, x: np.ndarray) -> np.ndarray:
@@ -62,15 +61,5 @@ class KNearestNeighbors(Model):
         k_indices = np.argsort(distances)[:self.k]
         k_nearest_labels = [self._parameters["ground_truth"][i]
                             for i in k_indices]
-
         most_common = Counter(k_nearest_labels). most_common()
         return most_common[0][0]
-
-    @property
-    def get_parameters(self) -> dict:
-        """
-        Return the copy of learned parameters (observations and ground truth)
-        as a dictionary.
-
-        """
-        return deepcopy(self._parameters)

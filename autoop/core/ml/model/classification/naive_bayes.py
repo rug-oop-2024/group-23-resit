@@ -1,6 +1,5 @@
 from autoop.core.ml.model import Model
 import numpy as np
-from copy import deepcopy
 from pydantic import PrivateAttr
 
 
@@ -95,12 +94,3 @@ class NaiveBayesModel(Model):
             pred_class = max(class_probabilities, key=class_probabilities.get)
             predictions.append(pred_class)
         return np.array(predictions)
-
-    @property
-    def get_parameters(self) -> dict:
-        """
-        Return the copy of learned parameters (observations and ground truth)
-        as a dictionary.
-
-        """
-        return deepcopy(self._parameters)

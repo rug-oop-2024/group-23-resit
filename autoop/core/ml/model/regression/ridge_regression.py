@@ -1,6 +1,5 @@
 from autoop.core.ml.model import Model
 import numpy as np
-from copy import deepcopy
 
 
 class RidgeRegression(Model):
@@ -34,8 +33,7 @@ class RidgeRegression(Model):
         """
 
         # Add a column of ones to observations for the intercept term
-        ones_column = np.ones((x.shape[0], 1))
-        x = np.hstack((ones_column, x))
+        x = self.columns_of_ones(x)
 
         # Closed-form solution of ridge regression:
         # (X.T * X + alpha * I)^(-1) * X.T * y
@@ -67,16 +65,3 @@ class RidgeRegression(Model):
 
         # Predict using the linear combination of coefficients and observations
         return x @ self._parameters['coefficients']
-
-    @property
-    def get_parameters(self) -> dict:
-        """
-        Return the copy of learned parameters (intercept and coefficients)
-        as a dictionary.
-        Returns:
-        dict: Dictionary with keys 'intercept' and 'coefficients'
-        """
-        return deepcopy({
-            'intercept': self._parameters[0],
-            'coefficients': self._parameters[1:]
-        })

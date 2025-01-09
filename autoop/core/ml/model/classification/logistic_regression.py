@@ -1,6 +1,5 @@
 from autoop.core.ml.model import Model
 import numpy as np
-from copy import deepcopy
 
 
 class LogisticRegressionModel(Model):
@@ -97,12 +96,3 @@ class LogisticRegressionModel(Model):
         probabilities = self.sigmoid(X @ self._parameters['weights'])
         # Converting probabilities to binary class predictions
         return (probabilities >= 0.5).astype(int)
-
-    @property
-    def get_parameters(self) -> dict:
-        """
-        Return the copy of learned parameters (observations and ground truth)
-        as a dictionary.
-
-        """
-        return deepcopy(self._parameters)

@@ -55,6 +55,14 @@ class Metric(ABC):
         """
         return self.__call__(y_true, y_pred)
 
+    def __str__(self) -> str:
+        """Human-readable string representation."""
+        return f"{self.__class__.__name__}"
+
+    def __repr__(self) -> str:
+        """Developer-friendly string representation."""
+        return f"{self.__class__.__name__}()"
+
 # ==========================
 # REGRESSION METRICS
 # ==========================

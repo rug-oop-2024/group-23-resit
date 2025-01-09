@@ -2,7 +2,6 @@ from autoop.core.ml.model import Model
 import numpy as np
 from sklearn.linear_model import Lasso
 from pydantic import PrivateAttr
-from copy import deepcopy
 from typing import Optional
 
 
@@ -50,16 +49,3 @@ class LassoWrapper(Model):
                              "Call fit first.")
         prediction = self.model.predict(x)
         return prediction
-
-    @property
-    def get_parameters(self) -> dict:
-        """
-        Return the copy of learned parameters (intercept and coefficients)
-        as a dictionary.
-        Returns:
-        dict: copy of Dictionary with keys 'intercept' and 'coefficients'
-        """
-        return deepcopy({
-            'intercept': self._parameters[0],
-            'coefficients': self._parameters[1:]
-        })

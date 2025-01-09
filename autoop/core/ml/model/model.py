@@ -5,6 +5,7 @@ from pydantic import PrivateAttr
 from typing import Literal
 import os
 import pickle
+from copy import deepcopy
 
 
 class Model(ABC):
@@ -12,6 +13,19 @@ class Model(ABC):
     _parameters = dict = PrivateAttr(default_factory=dict)
     name: str
     type = Literal["classification" or "regression"]
+
+    def columns_of_ones(self, x: np.ndarray) -> np.ndarray:
+        """Submethod for stacking column of 1's
+
+        Arguments:
+        x (np.ndarray)
+
+        Returns:
+        y (np.ndarray): resulting matrix after operation
+        """
+        ones_column = np.ones((x.shape[0], 1))
+        y = np.hstack((x, ones_column))
+        return y
 
     def to_artifact(self, name: str, asset_path: str =
                     "./model_artifacts/") -> Artifact:
@@ -28,6 +42,9 @@ class Model(ABC):
         model_bytes = pickle.dumps(model_data)
 
         artifact_asset_path = os.path.join(asset_path, f"{name}.pkl")
+
+        with open(artifact_asset_path, 'wb') as f:
+            f.write(model_bytes)
 
         # Construct and return the Artifact
         artifact = Artifact(
@@ -57,3 +74,10 @@ class Model(ABC):
         Return: ndarray representing a prediction
         """
         pass
+
+    @property
+    def parameters(self) -> dict:
+        """
+        Returns the copy of parameters in a dictionary
+        """
+        return deepcopy(self._parameters)

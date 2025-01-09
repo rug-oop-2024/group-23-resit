@@ -1,6 +1,5 @@
 from autoop.core.ml.model import Model
 import numpy as np
-from copy import deepcopy
 
 
 class MultipleLinearRegression(Model):
@@ -29,10 +28,9 @@ class MultipleLinearRegression(Model):
         """
 
         # Adds a column of ones to observations
-        observations_tilde = np.column_stack([np.ones(X.shape[0]),
-                                             X])
+        observations_tilde = self.columns_of_ones(X)
 
-        est_param = (np.linalg.pinv(observations_tilde.T @ observations_tilde)
+        est_param = (np.linalg.inv(observations_tilde.T @ observations_tilde)
                      @ observations_tilde.T @ y)
 
         self._parameters = {'parameters': est_param}
@@ -49,13 +47,5 @@ class MultipleLinearRegression(Model):
 
         para = self._parameters['parameters']
 
-        new_matrix = np.c_[np.ones(X.shape[0]),
-                           X]
+        new_matrix = self.columns_of_ones(X)
         return new_matrix @ para
-
-    @property
-    def get_parameters(self) -> dict:
-        """
-        Returns the copy of parameters in a dictionary
-        """
-        return deepcopy(self._parameters)

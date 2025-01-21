@@ -26,14 +26,16 @@ class MultipleLinearRegression(Model):
         Stores the fitted parameters in the 'parameters'
         attribute as a dictionary.
         """
+        if not np.all(X[:, 0] == 1):
+            X = self.columns_of_ones(X)
 
-        # Adds a column of ones to observations
-        observations_tilde = self.columns_of_ones(X)
+        XtX = X.T @ X
+        if np.linalg.matrix_rank(XtX) < XtX.shape[0]:
+            XtX_inv = np.linalg.pinv(XtX)
+        else:
+            XtX_inv = np.linalg.inv(XtX)
 
-        est_param = (np.linalg.inv(observations_tilde.T @ observations_tilde)
-                     @ observations_tilde.T @ y)
-
-        self._parameters = {'parameters': est_param}
+        self._parameters = {'parameters': XtX_inv @ X.T @ y}
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -46,6 +48,6 @@ class MultipleLinearRegression(Model):
         """
 
         para = self._parameters['parameters']
-
-        new_matrix = self.columns_of_ones(X)
+        if not np.all(X[:, 0] == 1):
+            new_matrix = self.columns_of_ones(X)
         return new_matrix @ para

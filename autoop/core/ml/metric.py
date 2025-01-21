@@ -161,6 +161,8 @@ class Accuracy(Metric):
         Returns:
             float: The accuracy as a fraction of correct predictions.
         """
+        if y_pred.ndim == 2:
+            y_pred = np.argmax(y_pred, axis=1)
         correct_predictions = np.sum(y_true == y_pred)
         total_predictions = len(y_true)
         if total_predictions > 0:
@@ -190,6 +192,8 @@ class Precision(Metric):
                    to the sum of true positives and false positives
             It returns 0 if there are no positive predictions
         """
+        if y_pred.ndim == 2:
+            y_pred = np.argmax(y_pred, axis=1)
         true_positive = np.sum((y_true == 1) & (y_pred == 1))
         false_positive = np.sum((y_true == 0) & (y_pred == 1))
         if (true_positive + false_positive) > 0:
@@ -218,6 +222,8 @@ class F1Score(Metric):
                    and recall.
             If precision and recall are both zero, it returns 0.
         """
+        if y_pred.ndim == 2:
+            y_pred = np.argmax(y_pred, axis=1)
         true_positive = np.sum((y_true == 1) & (y_pred == 1))
         false_positive = np.sum((y_true == 0) & (y_pred == 1))
         false_negative = np.sum((y_true == 1) & (y_pred == 0))

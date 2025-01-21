@@ -31,9 +31,16 @@ class KNearestNeighbors(Model):
         Trains the model by fitting the observations and ground_truth into the
         _parameters dictionary
         """
+        # Fixing the shape of y
+        if y.ndim > 1:
+            if y.shape[1] > 1:
+                y = np.argmax(y, axis=1)
+        else:
+            y = y.flatten()
+
         self._parameters = {
             "observations": x,
-            "ground_truth": y.flatten()
+            "ground_truth": y
         }
 
     def predict(self, x: np.ndarray) -> np.ndarray:

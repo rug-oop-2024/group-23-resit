@@ -4,6 +4,7 @@ import pickle
 from autoop.core.ml.artifact import Artifact
 from autoop.core.ml.dataset import Dataset
 from autoop.core.ml.model import Model
+from autoop.core.storage import LocalStorage
 from autoop.core.ml.feature import Feature
 from autoop.core.ml.metric import Metric, get_metric
 from autoop.functional.preprocessing import preprocess_features
@@ -122,6 +123,34 @@ Pipeline(
         """
         return np.concatenate(vectors, axis=1)
 
+    def compare_predictions(self, y_true: np.ndarray, y_pred: np.ndarray,
+                            metrics: list[Metric] = None) -> dict:
+        """
+        Compare model predictions to ground truth using selected metrics.
+
+        Args:
+            y_true (np.ndarray): Ground truth values.
+            y_pred (np.ndarray): Model predictions.
+            metrics (list): List of metric instances to use for evaluation.
+            If None, use the pipeline's metrics.
+
+        Returns:
+            dict: A dictionary with metric names as keys and evaluation
+            results as values.
+        """
+        if metrics is None:
+            metrics = self._metrics  # Use pipeline's default metrics
+
+        results = {}
+        for metric in metrics:
+            try:
+                result = metric.evaluate(y_true, y_pred)
+                results[metric.__class__.__name__] = result
+            except Exception as e:
+                results[metric.__class__.__name__] = f"Error: {e}"
+
+        return results
+
     def _train(self) -> None:
         """Train model"""
         X = self._compact_vectors(self._train_X)
@@ -172,7 +201,8 @@ Pipeline(
             }
         }
 
-    def to_artifact(self, name: str, version: str = "1.0.0") -> Artifact:
+    def to_artifact(self, name: str, version: str = "1.0.0",
+                    storage: LocalStorage = None) -> Artifact:
         """
         Converts the pipeline into an artifact for storage.
 
@@ -184,26 +214,38 @@ Pipeline(
             Artifact: The serialized artifact for the pipeline.
         """
         # Gather pipeline configuration data
-        pipeline_data = {
-            "model_type": self.model.type,
-            "model_parameters": self._model.get_parameters(),
-            "input_features": [feature.name for feature in
-                               self._input_features],
-            "target_feature": self._target_feature.name,
-            "metrics": [metric.__class__.__name__ for metric in self._metrics],
-            "split_ratio": self._split,
+        component_artifacts = self.artifacts
+        pipeline_metadata = {
+            "name": name,
+            "version": version,
+            "components": [
+                {
+                    "name": artifact.name,
+                    "type": artifact.type,
+                    "asset_path": artifact.asset_path,
+                    "metadata": artifact.metadata,
+                }
+                for artifact in component_artifacts
+            ],
         }
 
         # Serialize the pipeline data
-        serialized_data = pickle.dumps(pipeline_data)
+        serialized_data = pickle.dumps(pipeline_metadata)
+
+        artifact_key = f"pipelines/{name}_{version}.pkl"
+
+        if storage is None:
+            storage = LocalStorage()
+        storage.save(serialized_data, artifact_key)
 
         # Create and return an artifact with the serialized pipeline data
         artifact = Artifact(
             name=name,
-            asset_path=f"{name}_{version}.pkl",
+            asset_path=storage._join_path(artifact_key),
             data=serialized_data,
             type="pipeline",
             version=version,
+            metadata={"component_count": len(component_artifacts)},
         )
 
         return artifact
@@ -224,11 +266,13 @@ Pipeline(
         pipeline_data = pickle.loads(artifact.read())
 
         # Reconstruct pipeline components based on the artifact data
-        model = Model.get_parameters(pipeline_data["model_parameters"])
+        model = Model.parameters(pipeline_data["model_parameters"])
         input_features = [Feature(name=name) for name in
                           pipeline_data["input_features"]]
         target_feature = Feature(name=pipeline_data["target_feature"])
         metrics = [get_metric(name) for name in pipeline_data["metrics"]]
+        artifacts = pipeline_data["artifacts"]
+
         # Initialize and return a new Pipeline instance
         pipeline = cls(
             model=model,
@@ -238,4 +282,5 @@ Pipeline(
             split=pipeline_data["split_ratio"]
         )
 
+        pipeline._artifacts = artifacts
         return pipeline

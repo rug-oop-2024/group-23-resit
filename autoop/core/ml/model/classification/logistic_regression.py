@@ -59,10 +59,15 @@ class LogisticRegressionModel(Model):
         to zero, and iteratively updates weights based on the gradient of the
         loss function.
         """
-        # Adding a bias term to the observations
-        X = np.c_[np.ones(X.shape[0]), X]
+        # Fixing the shape of y
         if y.ndim > 1:
+            if y.shape[1] > 1:
+                y = np.argmax(y, axis=1)
+        else:
             y = y.flatten()
+
+        # Adding a bias term to the observations
+        X = self.columns_of_ones(X)
 
         # Initializing weights
         self._parameters['weights'] = np.zeros(X.shape[1])
@@ -91,8 +96,11 @@ class LogisticRegressionModel(Model):
         predictions (0 or 1) based on a threshold of 0.5.
         """
         # Adding a bias term to the observations
-        X = np.c_[np.ones(X.shape[0]), X]
+        X = self.columns_of_ones(X)
         # Predicting probabilities
         probabilities = self.sigmoid(X @ self._parameters['weights'])
-        # Converting probabilities to binary class predictions
+        # Converting probabilities to multi class predictions
+        if probabilities.ndim == 2:
+            return np.argmax(probabilities, axis=1)
+        # For binary classification
         return (probabilities >= 0.5).astype(int)

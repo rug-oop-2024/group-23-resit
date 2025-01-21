@@ -27,8 +27,8 @@ class Model(ABC):
         y = np.hstack((x, ones_column))
         return y
 
-    def to_artifact(self, name: str, asset_path: str =
-                    "./model_artifacts/") -> Artifact:
+    def to_artifact(self, name: str,
+                    asset_path: str = "./models/") -> Artifact:
         """Convert the model to an Artifact for storage or transfer."""
         os.makedirs(asset_path, exist_ok=True)
 

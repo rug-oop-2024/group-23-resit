@@ -61,7 +61,7 @@ class RidgeRegression(Model):
             shapes are incompatible.
         """
         # Add a column of ones to observations for the intercept term
-        x = np.hstack([np.ones((x.shape[0], 1)), x])
+        x = self.columns_of_ones(x)
 
         # Predict using the linear combination of coefficients and observations
         return x @ self._parameters['coefficients']

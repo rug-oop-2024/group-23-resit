@@ -42,6 +42,12 @@ class NaiveBayesModel(Model):
             each class,
               assuming a Gaussian distribution.
         """
+        # Fixing the shape of y
+        if y.ndim > 1:
+            if y.shape[1] > 1:
+                y = np.argmax(y, axis=1)
+        else:
+            y = y.flatten()
 
         self.classes = np.unique(y)
         self._parameters['priors'] = {}

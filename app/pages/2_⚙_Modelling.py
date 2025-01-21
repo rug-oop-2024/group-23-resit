@@ -155,6 +155,42 @@ if selected_dataset:
             st.write("Train Set Predictions:", results["predictions"]["train"])
             st.write("Test Set Predictions:", results["predictions"]["test"])
 
+            # Allow the user to compare predictions with ground truth
+            st.write("## Compare Predictions with Ground Truth")
+            ground_truth_input = st.text_area(
+                "Enter ground truth values (comma-separated)",
+                placeholder="E.g., 120000, 140000, 130000..."
+            )
+            if ground_truth_input:
+                try:
+                    ground_truth = list(map(float,
+                                            ground_truth_input.split(",")))
+                    predictions = results["predictions"]["test"]
+
+                    # Allow metric selection for comparison
+                    st.write("### Select Metrics for Comparison")
+                    selected_comparison_metrics = st.multiselect(
+                        "Select metrics for comparison",
+                        options=compatible_metrics,
+                        default=compatible_metrics[:1]
+                    )
+                    comparison_metrics = [get_metric(metric) for metric
+                                          in selected_comparison_metrics]
+
+                    # Compare predictions
+                    comparison_results = pipeline.compare_predictions(
+                        y_true=ground_truth,
+                        y_pred=predictions,
+                        metrics=comparison_metrics
+                    )
+
+                    st.write("### Comparison Results")
+                    for metric_name, value in comparison_results.items():
+                        st.write(f"{metric_name}: {value:.4f}")
+                except ValueError:
+                    st.error("Please ensure the ground truth values are"
+                             "numeric and properly formatted.")
+
             # Step 8: Save pipeline
             st.write("## Save the trained pipeline")
 
@@ -166,9 +202,12 @@ if selected_dataset:
                 if pipeline_name and pipeline_version:
                     # Convert pipeline to artifact and save
                     artifact_registry = AutoMLSystem.get_instance().registry
-                    pipeline_artifact = pipeline.to_artifact(
-                        name=pipeline_name,
-                        version=pipeline_version)
+                    pipeline_artifact = pipeline.to_artifact(pipeline_name,
+                                                             pipeline_version)
+                    # Write the artifact to a file if required by the registry
+                    with open(pipeline_artifact.asset_path, 'wb') as f:
+                        f.write(pipeline_artifact.data)
+
                     artifact_registry.register(pipeline_artifact)
                     st.success(f"Pipeline '{pipeline_name}' "
                                f"(version {pipeline_version}) saved "

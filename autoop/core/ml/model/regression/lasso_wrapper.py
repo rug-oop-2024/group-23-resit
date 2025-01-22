@@ -30,7 +30,7 @@ class LassoWrapper(Model):
 
         self.model.fit(x, y, sample_weight=sample_weight,
                        check_input=check_input)
-        self.parameters = np.append(self.model.intercept_, self.model.coef_)
+        self._parameters = np.append(self.model.intercept_, self.model.coef_)
 
     def predict(self, x: np.ndarray) -> np.ndarray:
         """

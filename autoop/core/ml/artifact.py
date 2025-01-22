@@ -42,7 +42,8 @@ class Artifact:
 
     def save(self, new_data: bytes) -> None:
         """Set or update the artifact's data."""
-        self._data = new_data
+        self.data = new_data
+        return self.data
 
     def get(self, attribute: str) -> str | bytes:
         """Retrieve an attribute by name if it exists, otherwise

@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from app.core.system import AutoMLSystem
 from autoop.core.ml.pipeline import Pipeline
+import pickle
 
 st.set_page_config(page_title="Deployment", page_icon="🚀")
 
@@ -21,18 +22,16 @@ if selected_pipeline_name:
     selected_pipeline_artifact = next(
         pipeline for pipeline in saved_pipelines
         if pipeline.name == selected_pipeline_name)
-    loaded_pipeline = Pipeline.from_artifact(selected_pipeline_artifact)
-    st.write("### Pipeline Summary")
-    st.write(f"**Name**: {loaded_pipeline.name}")
-    st.write(f"**Version**: {loaded_pipeline.version}")
-    st.write(f"**Model Type**: {loaded_pipeline.model.type}")
-    st.write(f"**Input Features**: "
-             f"{[feature.name for feature in loaded_pipeline.input_features]}")
-    st.write(f"**Target Feature**: {loaded_pipeline.target_feature.name}")
-    metrics_list = ", ".join(
-        metric.__class__.__name__ for metric in loaded_pipeline.metrics
+    loaded_pipeline = artifact_registry.get(selected_pipeline_artifact)
+    pipeline_data = pickle.loads(loaded_pipeline.data)
+    pipeline = Pipeline(
+        metrics=pipeline_data["metrics"],
+        dataset=pipeline_data["dataset"],
+        model=pipeline_data["model"],
+        input_features=pipeline_data["input_features"],
+        target_feature=pipeline_data["target_feature"],
+        split=pipeline_data["split"],
     )
-    st.write(f"**Metrics**: [{metrics_list}]")
 
 # Step 3: Upload CSV for Predictions
 st.header("2. Upload a CSV for Predictions")

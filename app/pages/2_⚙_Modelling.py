@@ -201,14 +201,10 @@ if selected_dataset:
             if st.button("Save Pipeline"):
                 if pipeline_name and pipeline_version:
                     # Convert pipeline to artifact and save
-                    artifact_registry = AutoMLSystem.get_instance().registry
                     pipeline_artifact = pipeline.to_artifact(pipeline_name,
                                                              pipeline_version)
-                    # Write the artifact to a file if required by the registry
-                    with open(pipeline_artifact.asset_path, 'wb') as f:
-                        f.write(pipeline_artifact.data)
 
-                    artifact_registry.register(pipeline_artifact)
+                    automl.registry.register(pipeline_artifact)
                     st.success(f"Pipeline '{pipeline_name}' "
                                f"(version {pipeline_version}) saved "
                                "successfully!")

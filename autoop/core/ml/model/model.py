@@ -3,7 +3,6 @@ from autoop.core.ml.artifact import Artifact
 import numpy as np
 from pydantic import PrivateAttr
 from typing import Literal
-import os
 import pickle
 from copy import deepcopy
 
@@ -28,9 +27,8 @@ class Model(ABC):
         return y
 
     def to_artifact(self, name: str,
-                    asset_path: str = "./models/") -> Artifact:
+                    base_path: str = "./models") -> Artifact:
         """Convert the model to an Artifact for storage or transfer."""
-        os.makedirs(asset_path, exist_ok=True)
 
         # Serialize the model's attributes (e.g., parameters) to bytes
         # for storage
@@ -41,10 +39,7 @@ class Model(ABC):
         }
         model_bytes = pickle.dumps(model_data)
 
-        artifact_asset_path = os.path.join(asset_path, f"{name}.pkl")
-
-        with open(artifact_asset_path, 'wb') as f:
-            f.write(model_bytes)
+        artifact_asset_path = f"{name}.pkl"
 
         # Construct and return the Artifact
         artifact = Artifact(
@@ -53,7 +48,6 @@ class Model(ABC):
             data=model_bytes,
             type=self.type,
             tags=["model", self.type],
-            metadata={"model_name": self.name, "model_type": self.type}
         )
 
         return artifact
@@ -81,3 +75,8 @@ class Model(ABC):
         Returns the copy of parameters in a dictionary
         """
         return deepcopy(self._parameters)
+
+    @parameters.setter
+    def parameters(self, parameters: dict) -> None:
+        """Setter for _parameters."""
+        self._parameters = parameters

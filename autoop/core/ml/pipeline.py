@@ -4,7 +4,6 @@ import pickle
 from autoop.core.ml.artifact import Artifact
 from autoop.core.ml.dataset import Dataset
 from autoop.core.ml.model import Model
-from autoop.core.storage import LocalStorage
 from autoop.core.ml.feature import Feature
 from autoop.core.ml.metric import Metric, get_metric
 from autoop.functional.preprocessing import preprocess_features
@@ -201,8 +200,7 @@ Pipeline(
             }
         }
 
-    def to_artifact(self, name: str, version: str = "1.0.0",
-                    storage: LocalStorage = None) -> Artifact:
+    def to_artifact(self, name: str, version: str = "1.0.0") -> Artifact:
         """
         Converts the pipeline into an artifact for storage.
 
@@ -214,38 +212,27 @@ Pipeline(
             Artifact: The serialized artifact for the pipeline.
         """
         # Gather pipeline configuration data
-        component_artifacts = self.artifacts
-        pipeline_metadata = {
-            "name": name,
-            "version": version,
-            "components": [
-                {
-                    "name": artifact.name,
-                    "type": artifact.type,
-                    "asset_path": artifact.asset_path,
-                    "metadata": artifact.metadata,
-                }
-                for artifact in component_artifacts
-            ],
+        pipeline_data = {
+            "dataset": self._dataset,
+            "model": self._model,
+            "input_features": self._input_features,
+            "target_feature": self._target_feature,
+            "split": self._split,
+            "metrics": self._metrics,
         }
 
         # Serialize the pipeline data
-        serialized_data = pickle.dumps(pipeline_metadata)
+        serialized_data = pickle.dumps(pipeline_data)
 
-        artifact_key = f"pipelines/{name}_{version}.pkl"
-
-        if storage is None:
-            storage = LocalStorage()
-        storage.save(serialized_data, artifact_key)
+        artifact_path = f"{name}.pkl"
 
         # Create and return an artifact with the serialized pipeline data
         artifact = Artifact(
             name=name,
-            asset_path=storage._join_path(artifact_key),
+            asset_path=artifact_path,
             data=serialized_data,
             type="pipeline",
             version=version,
-            metadata={"component_count": len(component_artifacts)},
         )
 
         return artifact

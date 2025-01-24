@@ -11,13 +11,12 @@ class RidgeRegression(Model):
     regularization term, controlled by alpha, helps prevent overfitting
     by discouraging large coefficients.
     """
-    type: str = "regression"
-    name: str = "ridge_regression"
 
     def __init__(self, alpha: float = 1.0) -> None:
         """Initializes the Ridge Regression model."""
         self.alpha = alpha  # Regularization strength
         self._parameters = {'coefficients': None, 'intercept': None}
+        super().__init__(name="ridge_regression", type="regression")
 
     def fit(self, x: np.ndarray, y: np.ndarray) -> None:
         """

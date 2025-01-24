@@ -138,7 +138,7 @@ Pipeline(
             results as values.
         """
         if metrics is None:
-            metrics = self._metrics  # Use pipeline's default metrics
+            metrics = self._metrics
 
         results = {}
         for metric in metrics:

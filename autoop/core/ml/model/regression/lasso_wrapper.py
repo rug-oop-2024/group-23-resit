@@ -11,12 +11,11 @@ class LassoWrapper(Model):
     and inherits its structure from the base model Model
     """
     _parameters: np.ndarray = PrivateAttr(default=None)
-    name: str = "lasso_wrapper"
-    type: str = "regression"
 
     def __init__(self) -> None:
         """Wraps the lasso model in this model"""
         self.model = Lasso()
+        super().__init__(name="lasso_wrapper", type="regression")
 
     def fit(self, x: np.ndarray, y: np.ndarray,
             sample_weight: Optional[np.ndarray] = None,
@@ -30,7 +29,7 @@ class LassoWrapper(Model):
 
         self.model.fit(x, y, sample_weight=sample_weight,
                        check_input=check_input)
-        self._parameters = np.append(self.model.intercept_, self.model.coef_)
+        self.parameters = self.model.get_params()
 
     def predict(self, x: np.ndarray) -> np.ndarray:
         """

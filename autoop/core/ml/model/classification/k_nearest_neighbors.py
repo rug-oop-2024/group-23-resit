@@ -12,12 +12,11 @@ class KNearestNeighbors(Model):
     """
     k: int = Field(title="Number of neighbors", default=3)
     _parameters = dict = PrivateAttr(default_factory=dict)
-    name: str = "k_nearest_neighbors"
-    type: str = "classification"
 
     def __init__(self, k: int = 3) -> None:
         """Initialize with default k=3"""
         self.k = k
+        super().__init__(name="k_nearest_neighbors", type="classification")
 
     @field_validator("k")
     def k_greater_than_zero(cls, value: int) -> int:

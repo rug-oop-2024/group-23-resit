@@ -1,17 +1,18 @@
 from abc import ABC, abstractmethod
 from autoop.core.ml.artifact import Artifact
 import numpy as np
-from pydantic import PrivateAttr
-from typing import Literal
 import pickle
 from copy import deepcopy
 
 
 class Model(ABC):
     """Base model for all ml models"""
-    _parameters = dict = PrivateAttr(default_factory=dict)
-    name: str
-    type = Literal["classification" or "regression"]
+
+    def __init__(self, name: str, type: str) -> None:
+        """Initialize the model"""
+        self._parameters = {}
+        self._name = name
+        self._type = type
 
     def columns_of_ones(self, x: np.ndarray) -> np.ndarray:
         """Submethod for stacking column of 1's
@@ -78,5 +79,35 @@ class Model(ABC):
 
     @parameters.setter
     def parameters(self, parameters: dict) -> None:
-        """Setter for _parameters."""
+        """
+        Setter for the parameters
+        """
         self._parameters = parameters
+
+    @property
+    def type(self) -> str:
+        """
+        Returns the type of the model
+        """
+        return self._type
+
+    @type.setter
+    def type(self, type: str) -> None:
+        """
+        Setter for the _type
+        """
+        self._type = type
+
+    @property
+    def name(self) -> str:
+        """
+        Returns the name of the model
+        """
+        return self._name
+
+    @name.setter
+    def name(self, name: str) -> None:
+        """
+        Setter for _name
+        """
+        self._name = name

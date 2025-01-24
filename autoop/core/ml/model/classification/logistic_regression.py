@@ -11,8 +11,6 @@ class LogisticRegressionModel(Model):
     gradient descent to minimize the logistic loss function.
 
     """
-    type: str = "classification"
-    name: str = "logistic_regression"
 
     def __init__(self, learning_rate: float = 0.01,
                  iterations: int = 1000) -> None:
@@ -31,6 +29,7 @@ class LogisticRegressionModel(Model):
         self._parameters = {
             'weights': None
         }
+        super().__init__(name="logistic_regression", type="classification")
 
     def sigmoid(self, z: np.ndarray) -> np.ndarray:
         """

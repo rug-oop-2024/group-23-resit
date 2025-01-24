@@ -13,8 +13,6 @@ class NaiveBayesModel(Model):
     where independence of features is assumed.
     """
     _parameters = dict = PrivateAttr(default_factory=dict)
-    type: str = "classification"
-    name: str = "naive_bayes"
 
     def __init__(self) -> None:
         """Initialization"""
@@ -23,6 +21,7 @@ class NaiveBayesModel(Model):
             'likelihoods': None
 
         }
+        super().__init__(name="naive_bayes", type="classification")
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> None:
         """

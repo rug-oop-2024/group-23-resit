@@ -7,12 +7,10 @@ class MultipleLinearRegression(Model):
     Multiple linear regression model that inherits its methods structure and
     attributes from the base model Model
     """
-    type: str = "regression"
-    name: str = "multiple_linear_regression"
 
     def __init__(self) -> None:
         """Inherits init from Model"""
-        super().__init__()
+        super().__init__(name="multiple_linear_regression", type="regression")
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> None:
         """

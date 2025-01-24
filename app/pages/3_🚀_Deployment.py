@@ -49,9 +49,10 @@ uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"])
 if uploaded_file and selected_pipeline_name:
     df = pd.read_csv(uploaded_file)
     dataset_name = uploaded_file.name.split(".")[0]
-    dataset = Dataset.from_dataframe(
-            data=df, name=dataset_name, asset_path=uploaded_file.name
-        )
+    dataset = Dataset.from_dataframe(data=df,
+                                     name=dataset_name,
+                                     asset_path=uploaded_file.name
+                                     )
     st.write("### Uploaded Data Preview")
     st.dataframe(df.head())
 

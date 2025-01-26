@@ -97,18 +97,18 @@ if uploaded_file and selected_pipeline_name:
                 # Allow metric selection for comparison
                 st.write("### Select Metrics for Comparison")
                 compatible_metrics = [
-                        metric
-                        for metric in METRICS
-                        if (
-                            task_type == "classification" and metric in [
-                                "accuracy", "precision", "f1_score"
-                            ]
-                        ) or (
-                            task_type == "regression" and metric in [
-                                "mean_squared_error", "mean_absolute_error",
-                                "r_squared"
-                            ]
-                        )
+                    metric
+                    for metric in METRICS
+                    if (
+                        task_type == "classification" and metric in [
+                            "accuracy", "precision", "f1_score"
+                        ]
+                    ) or (
+                        task_type == "regression" and metric in [
+                            "mean_squared_error", "mean_absolute_error",
+                            "r_squared"
+                        ]
+                    )
                 ]
 
                 selected_comparison_metrics = st.multiselect(

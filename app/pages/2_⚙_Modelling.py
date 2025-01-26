@@ -181,10 +181,11 @@ if selected_dataset:
             if st.button("Save Pipeline"):
                 if pipeline_name and pipeline_version:
                     # Convert pipeline to artifact and save
-                    pipeline_artifact = st.session_state["pipeline"
-                                                         ].to_artifact(
-                                                            pipeline_name,
-                                                            pipeline_version)
+                    pipeline = st.session_state["pipeline"]
+                    pipeline_artifact = pipeline.to_artifact(
+                        pipeline_name,
+                        pipeline_version,
+                    )
 
                     automl.registry.register(pipeline_artifact)
                     st.success(f"Pipeline '{pipeline_name}' "

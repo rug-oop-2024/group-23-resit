@@ -5,7 +5,7 @@ from autoop.core.ml.artifact import Artifact
 from autoop.core.ml.dataset import Dataset
 from autoop.core.ml.model import Model
 from autoop.core.ml.feature import Feature
-from autoop.core.ml.metric import Metric, get_metric
+from autoop.core.ml.metric import Metric
 from autoop.functional.preprocessing import preprocess_features
 import numpy as np
 
@@ -236,38 +236,3 @@ Pipeline(
         )
 
         return artifact
-
-    @classmethod
-    def from_artifact(cls, artifact: Artifact) -> 'Pipeline':
-        """
-        Loads a pipeline from a saved artifact.
-
-        Args:
-            artifact (Artifact): The artifact containing the serialized
-            pipeline.
-
-        Returns:
-            Pipeline: The reconstructed pipeline instance.
-        """
-        # Deserialize the pipeline data
-        pipeline_data = pickle.loads(artifact.read())
-
-        # Reconstruct pipeline components based on the artifact data
-        model = Model.parameters(pipeline_data["model_parameters"])
-        input_features = [Feature(name=name) for name in
-                          pipeline_data["input_features"]]
-        target_feature = Feature(name=pipeline_data["target_feature"])
-        metrics = [get_metric(name) for name in pipeline_data["metrics"]]
-        artifacts = pipeline_data["artifacts"]
-
-        # Initialize and return a new Pipeline instance
-        pipeline = cls(
-            model=model,
-            input_features=input_features,
-            target_feature=target_feature,
-            metrics=metrics,
-            split=pipeline_data["split_ratio"]
-        )
-
-        pipeline._artifacts = artifacts
-        return pipeline

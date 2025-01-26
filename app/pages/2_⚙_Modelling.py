@@ -132,6 +132,9 @@ if selected_dataset:
                  f"{100 - split * 100:.0f}% testing")
         st.write(f"- **Metrics**: {', '.join(selected_metrics)}")
 
+        if "pipeline" not in st.session_state:
+            st.session_state["pipeline"] = None
+
         # Step 7: Train Model and Report Results
         st.header("7. Train the Model")
         if st.button("Train"):
@@ -145,6 +148,7 @@ if selected_dataset:
                 split=split
             )
             results = pipeline.execute()
+            st.session_state["pipeline"] = pipeline
 
             # Display results
             st.write("### Results")
@@ -155,18 +159,32 @@ if selected_dataset:
             st.write("Train Set Predictions:", results["predictions"]["train"])
             st.write("Test Set Predictions:", results["predictions"]["test"])
 
+        if st.session_state["pipeline"] is None:
+            st.warning("Train a pipeline before saving.")
+        else:
+            pipeline_name = st.text_input(
+                "Enter a name for the pipeline",
+                st.session_state.get("pipeline_name", "")
+            )
+            pipeline_version = st.text_input(
+                "Enter a version for the pipeline",
+                st.session_state.get("pipeline_version", "1.0.0")
+            )
+
+            # Store the text inputs in session_state
+            st.session_state["pipeline_name"] = pipeline_name
+            st.session_state["pipeline_version"] = pipeline_version
+
             # Step 8: Save pipeline
             st.write("## Save the trained pipeline")
-
-            pipeline_name = st.text_input("Enter a name for the pipeline")
-            pipeline_version = st.text_input("Enter a version for the "
-                                             "pipeline", "1.0.0")
 
             if st.button("Save Pipeline"):
                 if pipeline_name and pipeline_version:
                     # Convert pipeline to artifact and save
-                    pipeline_artifact = pipeline.to_artifact(pipeline_name,
-                                                             pipeline_version)
+                    pipeline_artifact = st.session_state["pipeline"
+                                                         ].to_artifact(
+                                                            pipeline_name,
+                                                            pipeline_version)
 
                     automl.registry.register(pipeline_artifact)
                     st.success(f"Pipeline '{pipeline_name}' "

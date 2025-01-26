@@ -59,19 +59,28 @@ if uploaded_file and selected_pipeline_name:
     if st.button("Run Predictions"):
         # Perform predictions
         pipeline._dataset = dataset
+        pipeline._input_vectors = None
+        pipeline._output_vector = None
         # Check if Dataset is compatible with pipeline
-        ok = 0
-        data = dataset.read()
-        for name in data.columns:
-            for feature in pipeline._input_features:
-                if name == feature.name:
-                    ok = 1
-        if ok == 1:
-            predictions = pipeline.execute()
-            st.write("### Predictions")
-            st.write(predictions)
+        # Check if all required features are present
+        missing_features = [
+            feature.name for feature in pipeline._input_features
+            if feature.name not in dataset.read().columns
+        ]
+
+        if missing_features:
+            st.error(f"The uploaded dataset is missing the following"
+                     f"required features: "
+                     f"{', '.join(missing_features)}")
         else:
-            st.write("dataset does not contain required features")
+            predictions = pipeline.execute()
+            st.session_state["predictions"] = predictions
+            st.success("Predictions generated successfully!")
+
+    if "predictions" in st.session_state:
+        predictions = st.session_state["predictions"]
+        st.write("### Predictions")
+        st.write(predictions)
 
         # Allow the user to compare predictions with ground truth
         st.write("## Compare Predictions with Ground Truth")
@@ -82,24 +91,24 @@ if uploaded_file and selected_pipeline_name:
         if ground_truth_input:
             try:
                 ground_truth = list(map(float,
-                                        ground_truth_input.split(",")))
+                                    ground_truth_input.split(",")))
                 predictions = predictions["predictions"]["test"]
                 task_type = pipeline._model.type
                 # Allow metric selection for comparison
                 st.write("### Select Metrics for Comparison")
                 compatible_metrics = [
-                    metric
-                    for metric in METRICS
-                    if (
-                        task_type == "classification" and metric in [
-                            "accuracy", "precision", "f1_score"
-                        ]
-                    ) or (
-                        task_type == "regression" and metric in [
-                            "mean_squared_error", "mean_absolute_error",
-                            "r_squared"
-                        ]
-                    )
+                        metric
+                        for metric in METRICS
+                        if (
+                            task_type == "classification" and metric in [
+                                "accuracy", "precision", "f1_score"
+                            ]
+                        ) or (
+                            task_type == "regression" and metric in [
+                                "mean_squared_error", "mean_absolute_error",
+                                "r_squared"
+                            ]
+                        )
                 ]
 
                 selected_comparison_metrics = st.multiselect(
